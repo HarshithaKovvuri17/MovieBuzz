@@ -101,4 +101,4 @@ Your preference is saved automatically in browser localStorage.
 
 ## Author
 **Kovvuri Harshitha**
-Github Url: 
+- Github Url: https://github.com/HarshithaKovvuri17/MovieBuzz.git
