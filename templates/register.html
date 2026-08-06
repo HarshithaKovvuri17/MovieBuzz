@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register – MovieBuzz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        @keyframes fadeUp  { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
+        @keyframes floatBg { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(2%,-3%) scale(1.04)} }
+
+        html,body { height:100%; font-family:'Outfit',system-ui,sans-serif; background:var(--bg-primary); color:var(--text-primary); transition:background 0.4s ease,color 0.4s ease; }
+        [data-theme="light"] body { background:linear-gradient(135deg,#eef2ff 0%,#fdf4ff 45%,#fff0f9 75%,#eff6ff 100%); background-attachment:fixed; }
+
+        .auth-page-bg {
+            position:fixed; inset:0; z-index:0; pointer-events:none;
+            background:
+                radial-gradient(ellipse 65% 55% at 80% 15%, rgba(139,92,246,0.18) 0%, transparent 65%),
+                radial-gradient(ellipse 55% 50% at 20% 80%, rgba(99,102,241,0.14) 0%, transparent 65%),
+                radial-gradient(ellipse 45% 40% at 50% 50%, rgba(236,72,153,0.07) 0%, transparent 60%);
+            animation:floatBg 14s ease-in-out infinite;
+        }
+        [data-theme="light"] .auth-page-bg {
+            background:
+                radial-gradient(ellipse 65% 55% at 80% 15%, rgba(139,92,246,0.10) 0%, transparent 65%),
+                radial-gradient(ellipse 55% 50% at 20% 80%, rgba(99,102,241,0.09) 0%, transparent 65%);
+        }
+
+        .auth-container { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem; position:relative; z-index:1; }
+
+        .auth-card {
+            width:100%; max-width:460px;
+            background:rgba(15,20,30,0.88);
+            backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+            border:1.5px solid rgba(139,92,246,0.22);
+            border-radius:26px;
+            padding:2.6rem 2.2rem;
+            box-shadow:0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(139,92,246,0.1);
+            animation:fadeUp 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        [data-theme="light"] .auth-card {
+            background:rgba(255,255,255,0.92);
+            border-color:rgba(139,92,246,0.15);
+            box-shadow:0 24px 64px rgba(139,92,246,0.14), 0 0 0 1px rgba(99,102,241,0.08);
+        }
+
+        .auth-header { text-align:center; margin-bottom:1.8rem; }
+        .auth-logo {
+            font-size:1.9rem; font-weight:900; letter-spacing:-0.03em;
+            color:var(--text-primary); display:inline-flex; align-items:center;
+            gap:0.55rem; text-decoration:none; margin-bottom:0.6rem;
+        }
+        .auth-logo i { color:#8b5cf6; filter:drop-shadow(0 0 8px rgba(139,92,246,0.55)); }
+        .logo-dot { color:#ec4899; }
+        [data-theme="light"] .auth-logo { background:linear-gradient(135deg,#7c3aed,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        [data-theme="light"] .auth-logo i { -webkit-text-fill-color:initial; color:#8b5cf6; }
+
+        .auth-subtitle { color:#64748b; font-size:0.92rem; font-weight:500; }
+        [data-theme="light"] .auth-subtitle { color:#475569; }
+
+        .form-group { margin-bottom:1.15rem; }
+        .form-group label { display:block; margin-bottom:0.42rem; font-weight:700; font-size:0.84rem; color:#94a3b8; letter-spacing:0.02em; }
+        [data-theme="light"] .form-group label { color:#334155; }
+
+        .input-wrapper { position:relative; }
+        .input-wrapper i { position:absolute; left:1rem; top:50%; transform:translateY(-50%); color:#64748b; font-size:0.88rem; pointer-events:none; }
+        .input-wrapper input {
+            width:100%; padding:0.82rem 1rem 0.82rem 2.75rem;
+            background:rgba(255,255,255,0.05);
+            border:1.5px solid rgba(255,255,255,0.09);
+            border-radius:12px; color:#f1f5f9;
+            font-size:0.92rem; font-family:inherit;
+            transition:all 0.22s ease;
+        }
+        .input-wrapper input::placeholder { color:#475569; }
+        .input-wrapper input:focus { outline:none; border-color:#8b5cf6; box-shadow:0 0 0 3px rgba(139,92,246,0.16); background:rgba(139,92,246,0.07); }
+        [data-theme="light"] .input-wrapper input { background:#fff; border-color:rgba(139,92,246,0.2); color:#0f172a; }
+        [data-theme="light"] .input-wrapper input:focus { border-color:#7c3aed; box-shadow:0 0 0 3px rgba(124,58,237,0.13); background:#faf5ff; }
+
+        .btn-submit {
+            width:100%; padding:0.9rem; margin-top:0.5rem;
+            background:linear-gradient(135deg,#8b5cf6,#6366f1);
+            border:none; border-radius:12px; color:#fff;
+            font-weight:800; font-size:1rem; font-family:inherit;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem;
+            box-shadow:0 4px 18px rgba(139,92,246,0.38);
+            transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
+            letter-spacing:0.01em;
+        }
+        .btn-submit:hover { transform:translateY(-3px); box-shadow:0 8px 28px rgba(139,92,246,0.55); }
+        .btn-submit:active { transform:translateY(-1px); }
+
+        .auth-footer { text-align:center; margin-top:1.5rem; padding-top:1.3rem; border-top:1px solid rgba(255,255,255,0.07); font-size:0.88rem; color:#64748b; }
+        [data-theme="light"] .auth-footer { border-color:rgba(139,92,246,0.12); }
+        .auth-footer a { color:#a78bfa; font-weight:700; text-decoration:none; transition:color 0.2s; }
+        .auth-footer a:hover { color:#8b5cf6; text-decoration:underline; }
+        [data-theme="light"] .auth-footer a { color:#7c3aed; }
+
+        .alert-box { padding:0.82rem 1rem; border-radius:12px; font-size:0.87rem; font-weight:600; margin-bottom:1.2rem; display:flex; align-items:center; gap:0.6rem; }
+        .alert-error   { background:rgba(239,68,68,0.14);  border:1px solid rgba(239,68,68,0.35);  color:#fca5a5; }
+        .alert-success { background:rgba(16,185,129,0.14); border:1px solid rgba(16,185,129,0.35); color:#6ee7b7; }
+        .hidden { display:none !important; }
+
+        /* Floating theme toggle */
+        .page-theme-btn {
+            position:fixed; top:1.2rem; right:1.4rem; z-index:999;
+            width:44px; height:44px; border-radius:50%;
+            border:1.5px solid rgba(255,255,255,0.14);
+            background:rgba(255,255,255,0.08);
+            backdrop-filter:blur(12px); color:#f1f5f9;
+            font-size:1.15rem; cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+            box-shadow:0 4px 18px rgba(0,0,0,0.28);
+            transition:transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s, border-color 0.25s;
+        }
+        .page-theme-btn:hover { transform:scale(1.13) rotate(22deg); border-color:#f59e0b; box-shadow:0 0 22px rgba(245,158,11,0.5); }
+        [data-theme="light"] .page-theme-btn { background:linear-gradient(135deg,rgba(139,92,246,.09),rgba(236,72,153,.07)); border-color:rgba(139,92,246,.28); color:#1e1b4b; }
+
+        /* Password strength hint */
+        .pw-hint { font-size:0.76rem; color:#64748b; margin-top:0.3rem; }
+    </style>
+</head>
+<body>
+    <div class="auth-page-bg"></div>
+
+    <!-- Floating Theme Toggle -->
+    <button class="page-theme-btn" id="page-theme-btn" onclick="togglePageTheme()" title="Toggle Light / Dark Mode">
+        <i class="fa-solid fa-sun" id="page-theme-icon"></i>
+    </button>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <a href="/" class="auth-logo">
+                    <i class="fa-solid fa-film"></i> MovieBuzz<span class="logo-dot">.</span>
+                </a>
+                <p class="auth-subtitle">Create your reviewer account</p>
+            </div>
+
+            <div id="register-alert" class="alert-box alert-error hidden"></div>
+
+            <form id="register-page-form">
+                <div class="form-group">
+                    <label for="reg-username"><i class="fa-solid fa-user-plus"></i> Username</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <input type="text" id="reg-username" placeholder="Choose a username" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-password"><i class="fa-solid fa-key"></i> Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="password" id="reg-password" placeholder="Create a password" required autocomplete="new-password">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-confirm"><i class="fa-solid fa-check-double"></i> Confirm Password</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-check-double"></i>
+                        <input type="password" id="reg-confirm" placeholder="Repeat your password" required autocomplete="new-password">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-user-check"></i> Create Account
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Already have an account? <a href="/login">Sign In Here</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('register-page-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const alertBox = document.getElementById('register-alert');
+            alertBox.classList.add('hidden');
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirm  = document.getElementById('reg-confirm').value;
+
+            if (password !== confirm) {
+                alertBox.className = 'alert-box alert-error';
+                alertBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Passwords do not match!';
+                alertBox.classList.remove('hidden');
+                return;
+            }
+            try {
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alertBox.className = 'alert-box alert-success';
+                    alertBox.innerHTML = '<i class="fa-solid fa-circle-check"></i> Account created! Logging you in...';
+                    alertBox.classList.remove('hidden');
+                    setTimeout(() => { window.location.href = '/'; }, 900);
+                } else {
+                    alertBox.className = 'alert-box alert-error';
+                    alertBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ' + (data.error || 'Registration failed.');
+                    alertBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                alertBox.className = 'alert-box alert-error';
+                alertBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Connection error. Please try again.';
+                alertBox.classList.remove('hidden');
+            }
+        });
+    </script>
+
+    <script>
+        // Shared theme (same key as main portal)
+        (function applyTheme() {
+            const saved = localStorage.getItem('moviebuzz_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+            updateIcon(saved);
+        })();
+        function updateIcon(theme) {
+            const icon = document.getElementById('page-theme-icon');
+            if (!icon) return;
+            icon.className = theme === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+        }
+        function togglePageTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('moviebuzz_theme', next);
+            updateIcon(next);
+        }
+    </script>
+</body>
+</html>

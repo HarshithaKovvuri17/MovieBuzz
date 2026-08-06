@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieBuzz - Telugu Movie Reviews & Admin Portal</title>
+    <meta name="description" content="A real-time Telugu movie review web application with automated sentiment analysis, SQLite3 review aggregation, and single-admin dashboard.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fa-solid fa-film logo-icon"></i>
+                <span class="logo-text">MovieBuzz<span class="logo-accent">.</span></span>
+                <span class="nav-telugu-tag"><i class="fa-solid fa-fire"></i> Telugu Cinema</span>
+            </div>
+
+            <!-- Portal Navigation Tabs (Movies vs Admin) -->
+            <div id="guest-nav-controls" class="nav-auth-buttons">
+                    <a href="/login" class="btn btn-outline">
+                        <i class="fa-solid fa-right-to-bracket"></i> Login
+                    </a>
+                    <a href="/register" class="btn btn-primary">
+                        <i class="fa-solid fa-user-plus"></i> Register
+                    </a>
+                </div>
+            
+            <div id="view-tabs" class="view-tabs hidden">
+                <button id="view-btn-movies" class="view-tab-btn active" onclick="switchView('movies')">
+                    <i class="fa-solid fa-clapperboard"></i> Movies Portal
+                </button>
+                <button id="view-btn-admin" class="view-tab-btn admin-badge-btn" onclick="switchView('admin')">
+                    <i class="fa-solid fa-user-shield"></i> Admin Portal
+                </button>
+            </div>
+            
+            <!-- Right side: Theme toggle + User info -->  
+            <div class="nav-right-group">
+                <!-- Theme Toggle Button (Light/Dark Mode Symbol) -->
+                <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Theme (Light / Dark Mode)" onclick="toggleTheme()">
+                    <i class="fa-solid fa-sun" id="theme-icon"></i>
+                </button>
+
+                <div id="auth-nav" class="auth-nav">
+                    <!-- Dynamic Auth Buttons loaded by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+        <!-- Hero Banner Section -->
+        <section class="hero-section">
+            <div class="hero-badge"><i class="fa-solid fa-bolt"></i> Real-time Sentiment Analytics</div>
+            <h1 class="hero-title">Telugu Movies Review Portal</h1>
+            <p class="hero-subtitle">Express your opinion on Telugu movies. All reviews are classified into positive & negative counts.</p>
+        </section>
+
+        <!-- Auth Alert Banner (When not logged in) -->
+        <div id="login-prompt-banner" class="alert-banner hidden">
+            <div class="banner-content">
+                <i class="fa-solid fa-lock banner-icon"></i>
+                <span>You are in guest mode. <strong>Log in as DP / DP</strong> (or <strong>admin / admin</strong>) to submit movie reviews or access the Admin Portal!</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openAuthModal('login')">Log In Now</button>
+        </div>
+
+        <!-- MOVIES VIEW SECTION -->
+        <section id="section-movies-view" class="movies-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fa-solid fa-clapperboard"></i> Featured Recent Telugu Movies</h2>
+                <span class="section-badge" id="movie-count-badge">11 Movies</span>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loading-spinner" class="spinner-container">
+                <div class="spinner"></div>
+                <p>Fetching 10+ Telugu movies and live review counts from SQLite3 database...</p>
+            </div>
+
+            <!-- Movies Grid -->
+            <div id="movies-grid" class="movies-grid hidden">
+                <!-- Movie Cards dynamically populated here -->
+            </div>
+        </section>
+
+        <!-- ADMIN PORTAL VIEW SECTION -->
+        <section id="section-admin-view" class="admin-section hidden">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fa-solid fa-user-shield"></i> Single Admin Portal Dashboard</h2>
+                <span class="admin-role-badge"><i class="fa-solid fa-lock"></i> Single Admin Mode</span>
+            </div>
+
+            <!-- Admin System Stats KPI Grid -->
+            <div class="admin-kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon users"><i class="fa-solid fa-users"></i></div>
+                    <div class="kpi-data">
+                        <span class="kpi-value" id="kpi-users">0</span>
+                        <span class="kpi-label">Registered Users</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon movies"><i class="fa-solid fa-video"></i></div>
+                    <div class="kpi-data">
+                        <span class="kpi-value" id="kpi-movies">0</span>
+                        <span class="kpi-label">Telugu Movies</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon reviews"><i class="fa-solid fa-comments"></i></div>
+                    <div class="kpi-data">
+                        <span class="kpi-value" id="kpi-reviews">0</span>
+                        <span class="kpi-label">Total Reviews</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon positive"><i class="fa-solid fa-thumbs-up"></i></div>
+                    <div class="kpi-data">
+                        <span class="kpi-value" id="kpi-pos">0</span>
+                        <span class="kpi-label">Positive Reviews</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon negative"><i class="fa-solid fa-thumbs-down"></i></div>
+                    <div class="kpi-data">
+                        <span class="kpi-value" id="kpi-neg">0</span>
+                        <span class="kpi-label">Negative Reviews</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Sub-tabs -->
+            <div class="admin-subtabs">
+                <button id="admin-tab-btn-users" class="admin-subtab-btn active" onclick="switchAdminSubtab('users')">
+                    <i class="fa-solid fa-address-book"></i> Registered Users Directory (<span id="user-count-badge">0</span>)
+                </button>
+                <button id="admin-tab-btn-reviews" class="admin-subtab-btn" onclick="switchAdminSubtab('reviews')">
+                    <i class="fa-solid fa-list-check"></i> All Film Reviews Feed (<span id="review-count-badge">0</span>)
+                </button>
+            </div>
+
+            <!-- Table 1: Registered Users -->
+            <div id="admin-subpanel-users" class="admin-panel-card">
+                <h3 class="panel-card-title"><i class="fa-solid fa-users"></i> Users Stored in SQLite Database</h3>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Username</th>
+                                <th>Account Role</th>
+                                <th>Registered Date</th>
+                                <th>Total Reviews Posted</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-users-table-body">
+                            <!-- Dynamic user rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Table 2: All Movie Reviews -->
+            <div id="admin-subpanel-reviews" class="admin-panel-card hidden">
+                <h3 class="panel-card-title"><i class="fa-solid fa-comments"></i> Recent Reviews for All Telugu Films</h3>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Review ID</th>
+                                <th>Reviewer</th>
+                                <th>Movie Code</th>
+                                <th>Telugu Film Title</th>
+                                <th>Review Content</th>
+                                <th>Detected Sentiment</th>
+                                <th>Submitted At</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-reviews-table-body">
+                            <!-- Dynamic review rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p><i class="fa-database icon"></i> SQLite3 Database Powered Telugu Movie Review App &bull; Admin Portal Ready</p>
+        </div>
+    </footer>
+
+    <!-- Auth Modal (Sign Up / Login) -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+
+            <div class="modal-tabs">
+                <button id="tab-login" class="tab-btn active" onclick="switchAuthTab('login')">Log In</button>
+                <button id="tab-signup" class="tab-btn" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+
+
+            <!-- Form -->
+            <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+                <div class="form-group">
+                    <label for="auth-username"><i class="fa-solid fa-user"></i> Username</label>
+                    <input type="text" id="auth-username" class="form-input" placeholder="Enter your username" required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="auth-password"><i class="fa-solid fa-lock"></i> Password</label>
+                    <input type="password" id="auth-password" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+
+                <div id="auth-error-msg" class="form-error hidden"></div>
+
+                <button type="submit" id="auth-submit-btn" class="btn btn-gradient btn-full">
+                    <span id="auth-btn-text">Log In</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Full View Movie Detail & Reviews Modal -->
+    <div id="movie-detail-modal" class="modal-overlay hidden" onclick="closeMovieDetailModal()">
+        <div class="split-modal-card" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeMovieDetailModal()">&times;</button>
+            <div class="split-modal-body">
+                <!-- Left Side: Movie Poster & Details -->
+                <div class="split-left">
+                    <div class="detail-poster-wrapper">
+                        <img id="detail-modal-poster" src="" alt="Movie Poster" class="detail-poster-img">
+                    </div>
+                    <div class="detail-info-box">
+                        <h2 id="detail-modal-title" class="detail-title"></h2>
+                        <div id="detail-modal-meta" class="detail-meta"></div>
+                        <div id="detail-modal-stats" class="detail-stats-row"></div>
+                    </div>
+                </div>
+                <!-- Right Side: Review Submission Form at Top + All User Reviews Below -->
+                <div class="split-right">
+                    <div class="split-right-header">
+                        <h3><i class="fa-solid fa-comments"></i> Community Reviews</h3>
+                        <span id="detail-modal-review-count" class="review-count-badge">0 Reviews</span>
+                    </div>
+
+                    <!-- Review Submission Container (Top of Reviews) -->
+                    <div id="modal-review-form-container" class="modal-review-form-box">
+                        <!-- Populated dynamically based on auth state -->
+                    </div>
+
+                    <div id="detail-modal-reviews-list" class="detail-reviews-scroll">
+                        <!-- Reviews populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
