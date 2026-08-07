@@ -24,10 +24,12 @@ MovieReview/
 ├── app.py                  # Flask application & API routes
 ├── database.py             # SQLite3 schema, seeding & queries
 ├── sentiment.py            # RNN + lexicon sentiment engine
-├── requirements.txt        # Python dependencies
-├── movie_reviews.db        # SQLite3 database (auto-created)
+├── train_model.py          # IMDb dataset downloader & model trainer
+├── imdb_sample_dataset.csv # 1,000 decoded sample IMDb reviews (CSV format)
 ├── rnn_imdb_model.h5       # Trained SimpleRNN model weights
 ├── imdb_word_index.pkl     # IMDb word-to-index mapping
+├── requirements.txt        # Python dependencies
+├── movie_reviews.db        # SQLite3 database (auto-created)
 ├── static/
 │   ├── css/
 │   │   └── style.css       # Full dark/light theme design system
@@ -42,7 +44,7 @@ MovieReview/
 
 ---
 
-## 🤖 Sentiment Model
+## 🤖 Sentiment Model & IMDb Dataset Training
 
 The sentiment engine uses a **TensorFlow Keras SimpleRNN** trained on the IMDb dataset:
 
@@ -60,7 +62,15 @@ model = Sequential([
 - **Training**: 3 epochs, batch size 64
 - **Test Accuracy**: ~80.3%
 
-If the RNN model is unavailable, it automatically falls back to a **lexicon rule-based** sentiment analyzer.
+### Re-training on the IMDb Dataset
+You can re-train the model or regenerate the dataset mapping at any time by running:
+
+```bash
+python train_model.py
+```
+
+This script automatically downloads the IMDb 50,000 review dataset, builds `imdb_word_index.pkl`, exports a readable sample CSV (`imdb_sample_dataset.csv`), trains the `SimpleRNN` model, and saves the trained weights into `rnn_imdb_model.h5`.
+
 
 ---
 
